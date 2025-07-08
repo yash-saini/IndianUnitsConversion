@@ -1,7 +1,88 @@
 ﻿@page "/"
+@using ConversionFrontend.Models
+@inject HttpClient Http
 
-<PageTitle>Home</PageTitle>
+<h3>Land Unit Converter</h3>
 
-<h1>Hello, world!</h1>
+<div class="form-group">
+    <label>Value</label>
+    <input type="number" class="form-control" @bind="request.Value" />
+</div>
 
-Welcome to your new app.
+<div class="form-group">
+    <label>From Unit</label>
+    <select class="form-control" @bind="request.FromUnit">
+        @foreach (var unit in units)
+        {
+            <option value="@unit">@unit</option>
+        }
+    </select>
+</div>
+
+<div class="form-group">
+    <label>To Unit</label>
+    <select class="form-control" @bind="request.ToUnit">
+        @foreach (var unit in units)
+        {
+            <option value="@unit">@unit</option>
+        }
+    </select>
+</div>
+
+<button class="btn btn-primary mt-2" @onclick="Convert">Convert</button>
+
+@if (response != null)
+{
+    <div class="alert alert-success mt-3">
+        @($"{response.Value} {response.FromUnit} = {response.ConvertedValue:F4} {response.ToUnit}")
+    </div>
+}
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-3">
+        @errorMessage
+    </div>
+}
+
+@code {
+    LandConversionRequest request = new();
+    LandConversionResponse? response;
+    string? errorMessage;
+    List<string> units = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            units = await Http.GetFromJsonAsync<List<string>>("api/LandConversion/units") ?? new();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Failed to load units.";
+        }
+    }
+
+    public async Task Convert()
+    {
+        errorMessage = null;
+        response = null;
+
+        try
+        {
+            var res = await Http.PostAsJsonAsync("api/LandConversion/convert", request);
+            if (res.IsSuccessStatusCode)
+            {
+                response = await res.Content.ReadFromJsonAsync<LandConversionResponse>();
+            }
+            else
+            {
+                errorMessage = "Conversion failed. Please check your inputs.";
+            }
+        }
+        catch
+        {
+            errorMessage = "API not reachable. Make sure it's running.";
+        }
+    }
+}
