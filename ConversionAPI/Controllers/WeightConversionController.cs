@@ -6,16 +6,16 @@ namespace ConversionAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class LandConversionController : ControllerBase
+    public class WeightConversionController : ControllerBase
     {
-        private readonly LandConversionService _landConversionService;
-        public LandConversionController(LandConversionService landConversionService)
+        private readonly WeightConversionService _weightConversionService;
+        public WeightConversionController(WeightConversionService weightConversionService)
         {
-            _landConversionService = landConversionService;
+            _weightConversionService = weightConversionService;
         }
 
         [HttpPost("convert")]
-        public IActionResult ConvertLandArea([FromBody] LandConversionRequest request)
+        public IActionResult ConvertWeight([FromBody] WeightConversionRequest request)
         {
             if (request == null || string.IsNullOrEmpty(request.FromUnit) || string.IsNullOrEmpty(request.ToUnit))
             {
@@ -30,18 +30,19 @@ namespace ConversionAPI.Controllers
                     ConvertedValue = request.Value,
                     request.FromUnit,
                     request.ToUnit,
-                    request.LandId,
+                    request.WeightId,
                 });
             }
             try
             {
-                double convertedValue = _landConversionService.ConvertLandArea(request.Value, request.FromUnit, request.ToUnit);
+                double convertedValue = _weightConversionService.ConvertWeight(request.Value, request.FromUnit, request.ToUnit);
                 return Ok(new
                 {
                     ConvertedValue = convertedValue,
                     request.FromUnit,
                     request.ToUnit,
-                    request.LandId,
+                    request.WeightId,
+                    request.RequestDate
                 });
             }
             catch (ArgumentException ex)
@@ -49,21 +50,18 @@ namespace ConversionAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
         [HttpGet("units")]
         public IActionResult GetSupportedUnits()
-        {   var supportedUnits = new[]
+        {
+            var supportedUnits = new[]
             {
-                "hectare",
-                "square_meter",
-                "acre",
-                "square_kilometer",
-                "square_foot",
-                "square_yard",
-                "square_guz",
-                "square_bigha",
-                "square_feet",
-                "square_yards"
+                "kilogram",
+                "gram",
+                "pound",
+                "ounce",
+                "tonne",
+                "stone",
+                "milligram"
             };
             return Ok(supportedUnits);
         }

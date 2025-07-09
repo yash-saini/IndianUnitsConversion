@@ -9,6 +9,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<LandConversionService>();
+builder.Services.AddSingleton<WeightConversionService>();
 
 // Add this before building the app
 builder.Services.AddCors(options =>

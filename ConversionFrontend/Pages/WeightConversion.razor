@@ -1,57 +1,88 @@
 ﻿@page "/WeightConversion"
+@using ConversionFrontend.Models
 @inject HttpClient Http
 
 <PageTitle>Weight Conversion</PageTitle>
 
-<h1>Weather</h1>
-
-<p>This component demonstrates fetching data from the server.</p>
-
-@if (forecasts == null)
+<h3>Weight Conversion</h3>
+<div class="form-group">
+    <label>Value</label>
+    <input type="number" class="form-control" @bind="request.Value" />
+</div>
+<div class="form-group">
+    <label>From Unit</label>
+    <select class="form-control" @bind="request.FromUnit">
+        @foreach (var unit in units)
+        {
+            <option value="@unit">@unit</option>
+        }
+    </select>
+</div>
+<div class="form-group">
+    <label>To Unit</label>
+    <select class="form-control" @bind="request.ToUnit">
+        @foreach (var unit in units)
+        {
+            <option value="@unit">@unit</option>
+        }
+    </select>
+</div>
+<button class="btn btn-primary mt-2" @onclick="Convert">Convert</button>
+@if (response != null)
 {
-    <p><em>Loading...</em></p>
+    <div class="alert alert-success mt-3">
+        @($"{response.Value} {response.FromUnit} = {response.ConvertedValue:F4} {response.ToUnit}")
+    </div>
 }
-else
+@if (errorMessage != null)
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var forecast in forecasts)
-            {
-                <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="alert alert-danger mt-3">
+        @errorMessage
+    </div>
 }
-
 @code {
-    private WeatherForecast[]? forecasts;
-
+    WeightConversionRequest request = new();
+    WeightConversionResponse? response;
+    string? errorMessage;
+    List<string> units = new();
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+        try
+        {
+            units = await Http.GetFromJsonAsync<List<string>>("api/WeightConversion/units") ?? new();
+            
+            if (units.Count >= 2)
+            {
+                request.FromUnit = units[0];
+                request.ToUnit = units[1];
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error fetching units: {ex.Message}";
+        }
     }
-
-    public class WeatherForecast
+    private async Task Convert()
     {
-        public DateOnly Date { get; set; }
-
-        public int TemperatureC { get; set; }
-
-        public string? Summary { get; set; }
-
-        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+        errorMessage = null;
+        response = null;
+        try
+        {
+            var res = await Http.PostAsJsonAsync("api/WeightConversion/convert", request);
+            if (res.IsSuccessStatusCode)
+            {
+                response = await res.Content.ReadFromJsonAsync<WeightConversionResponse>();
+                if (response != null)
+                    response.Value = request.Value;
+            }
+            else
+            {
+                errorMessage = "Conversion failed. Please check your inputs.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "API not reachable. Make sure it's running.";
+        }
     }
 }
