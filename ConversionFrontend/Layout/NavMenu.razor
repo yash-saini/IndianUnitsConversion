@@ -10,27 +10,53 @@
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Land Conversion
+            <NavLink class="nav-link custom-nav-link" href="" Match="NavLinkMatch.All">
+                <span class="nav-icon bi bi-map"></span>
+                <span class="nav-text">Land Conversion</span>
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="WeightConversion">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Weight Conversion
+            <NavLink class="nav-link custom-nav-link" href="WeightConversion">
+                <span class="nav-icon bi bi-box-seam"></span>
+                <span class="nav-text">Weight Conversion</span>
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="CurrencyConversion">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Currency Conversion
+            <NavLink class="nav-link custom-nav-link" href="CurrencyConversion">
+                <span class="nav-icon bi bi-currency-exchange"></span>
+                <span class="nav-text">Currency Conversion</span>
             </NavLink>
         </div>
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="GoldPrices">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Gold Prices
+            <NavLink class="nav-link custom-nav-link" href="GoldPrices">
+                <span class="nav-icon bi bi-coin"></span>
+                <span class="nav-text">Gold Prices</span>
             </NavLink>
         </div>
     </nav>
 </div>
+
+<style>
+    .custom-nav-link {
+        display: flex !important;
+        align-items: center !important;
+        line-height: 1.25rem !important;
+        padding: 0.5rem 1rem !important;
+    }
+
+    .nav-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 1.5rem !important;
+        margin-right: 0.5rem !important;
+        font-size: 1rem !important;
+    }
+
+    .nav-text {
+        display: inline-block !important;
+    }
+</style>
 
 @code {
     private bool collapseNavMenu = true;
