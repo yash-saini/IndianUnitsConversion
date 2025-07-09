@@ -10,6 +10,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<LandConversionService>();
 builder.Services.AddSingleton<WeightConversionService>();
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<CurrencyConversionService>();
 
 // Add this before building the app
 builder.Services.AddCors(options =>
