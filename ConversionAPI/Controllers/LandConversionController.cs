@@ -21,6 +21,18 @@ namespace ConversionAPI.Controllers
             {
                 return BadRequest("Invalid request data.");
             }
+            if (request.Value < 0)
+                return BadRequest("Value must be greater than zero.");
+            if (request.FromUnit.ToLower() == request.ToUnit.ToLower())
+            {
+                return Ok(new
+                {
+                    ConvertedValue = request.Value,
+                    request.FromUnit,
+                    request.ToUnit,
+                    request.LandId,
+                });
+            }
             try
             {
                 double convertedValue = _landConversionService.ConvertLandArea(request.Value, request.FromUnit, request.ToUnit);

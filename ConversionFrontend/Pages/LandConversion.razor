@@ -29,7 +29,10 @@
     </select>
 </div>
 
-<button class="btn btn-primary mt-2" @onclick="Convert">Convert</button>
+<button class="btn btn-primary mt-2"
+        @onclick="Convert">
+    Convert
+</button>
 
 @if (response != null)
 {
@@ -56,6 +59,12 @@
         try
         {
             units = await Http.GetFromJsonAsync<List<string>>("api/LandConversion/units") ?? new();
+
+            if (units.Count >= 2)
+            {
+                request.FromUnit = units[0];
+                request.ToUnit = units[1];
+            }
         }
         catch (Exception ex)
         {
@@ -74,6 +83,8 @@
             if (res.IsSuccessStatusCode)
             {
                 response = await res.Content.ReadFromJsonAsync<LandConversionResponse>();
+                if (response != null)
+                    response.Value = request.Value;
             }
             else
             {
