@@ -77,7 +77,8 @@
             }
             else
             {
-                errorMessage = "Conversion failed. Please check your inputs.";
+                var error = await res.Content.ReadAsStringAsync();
+                errorMessage = !string.IsNullOrWhiteSpace(error) ? error : "Conversion failed. Please check your inputs.";
             }
         }
         catch
