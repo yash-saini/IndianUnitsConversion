@@ -1,8 +1,89 @@
 ﻿@page "/CurrencyConversion"
+@using ConversionFrontend.Models
+@using static System.Net.WebRequestMethods
+@inject HttpClient Http
 
 <PageTitle>Currency Conversion</PageTitle>
 <h3>CurrencyConversion</h3>
+<div class="form-group">
+    <label>Value</label>
+    <input type="number" class="form-control" @bind="request.Amount" />
+</div>
 
-@code {
-
+<div class="form-group">
+    <label>From Currency</label>
+    <select class="form-control" @bind="request.FromCurrency">
+        @foreach (var currency in currencies)
+        {
+            <option value="@currency">@currency</option>
+        }
+    </select>
+</div>
+<div class="form-group">
+    <label>To Currency</label>
+    <select class="form-control" @bind="request.ToCurrency">
+        @foreach (var currency in currencies)
+        {
+            <option value="@currency">@currency</option>
+        }
+    </select>
+</div>
+<button class="btn btn-primary mt-2" @onclick="Convert">Convert</button>
+@if (response != null)
+{
+    <div class="alert alert-success mt-3">
+        @($"{response.Amount} {response.FromCurrency} = {response.ConvertedAmount:F4} {response.ToCurrency}")
+    </div>
 }
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-3">
+        @errorMessage
+    </div>
+}
+@code {
+    CurrencyConversionRequest request = new();
+    CurrencyConversionResponse? response;
+    string? errorMessage;
+    List<string> currencies = new();
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            currencies = await Http.GetFromJsonAsync<List<string>>("api/CurrencyConversion/currencies") ?? new();
+            if (currencies.Count >= 2)
+            {
+                request.FromCurrency = currencies[0];
+                request.ToCurrency = currencies[1];
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error fetching currencies: {ex.Message}";
+        }
+    }
+    private async Task Convert()
+    {
+        errorMessage = null;
+        response = null;
+        try
+        {
+            var res = await Http.PostAsJsonAsync("api/CurrencyConversion/convert", request);
+            if (res.IsSuccessStatusCode)
+            {
+                response = await res.Content.ReadFromJsonAsync<CurrencyConversionResponse>();
+                if (response != null)
+                    response.Amount = request.Amount;
+            }
+            else
+            {
+                errorMessage = "Conversion failed. Please check your inputs.";
+            }
+        }
+        catch
+        {
+            errorMessage = "API not reachable. Make sure it's running.";
+        }
+    }
+}
+
