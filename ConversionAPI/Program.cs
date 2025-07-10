@@ -10,6 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<LandConversionService>();
 builder.Services.AddSingleton<WeightConversionService>();
+builder.Services.AddSingleton<GoldPriceConversionService>();
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<CurrencyConversionService>();
 
