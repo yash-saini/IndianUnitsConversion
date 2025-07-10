@@ -1,16 +1,21 @@
 ﻿@inherits LayoutComponentBase
+@inject IJSRuntime JsRuntime
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
 
         <article class="content px-4">
-            @Body
+                @Body
         </article>
+
+        <footer class="footer mt-auto py-3">
+            <div class="container text-center">
+                <span class="text-muted">Indian Units Conversion &copy; @DateTime.Now.Year</span>
+            </div>
+        </footer>
     </main>
 </div>
