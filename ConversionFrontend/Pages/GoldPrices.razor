@@ -1,18 +1,104 @@
 ﻿@page "/GoldPrices"
+@using ConversionFrontend.Models
+@using static System.Net.WebRequestMethods
+@inject HttpClient Http
 
-<PageTitle>Gold Prices</PageTitle>
+<h3>Gold Price Calculator</h3>
 
-<h1>Counter</h1>
+<div class="form-group">
+    <label>Weight</label>
+    <input type="number" class="form-control" @bind="request.Weight" />
+</div>
 
-<p role="status">Current count: @currentCount</p>
+<div class="form-group">
+    <label>Unit</label>
+    <select class="form-control" @bind="request.Unit">
+        @foreach (var unit in units)
+        {
+            <option value="@unit">@unit</option>
+        }
+    </select>
+</div>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<div class="form-group">
+    <label>Currency</label>
+    <select class="form-control" @bind="request.Currency">
+        @foreach (var currency in currencies)
+        {
+            <option value="@currency">@currency</option>
+        }
+    </select>
+</div>
+
+<button class="btn btn-primary mt-2" @onclick="CalculatePrice">Calculate</button>
+
+
+@if (response != null)
+{
+    <div class="alert alert-success mt-3">
+        <p>
+            1 @response.Unit of gold =
+            <strong>@string.Format("{0}{1:F2}", GetSymbol(response.Currency), response.PricePerGram)</strong> @response.Currency
+        </p>
+        <p>
+            @request.Weight @response.Unit =
+            <strong>@string.Format("{0}{1:F2}", GetSymbol(response.Currency), response.TotalPrice)</strong> @response.Currency
+        </p>
+    </div>
+}
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger mt-3">@errorMessage</div>
+}
 
 @code {
-    private int currentCount = 0;
+    GoldConversionRequest request = new();
+    GoldConversionResponse? response;
+    string? errorMessage;
 
-    private void IncrementCount()
+    List<string> units = new();
+    List<string> currencies = new();
+
+    private static readonly Dictionary<string, string> CurrencySymbols = new()
     {
-        currentCount++;
+        { "USD", "$" },
+        { "INR", "₹" },
+        { "EUR", "€" },
+        { "GBP", "£" },
+        { "JPY", "¥" }
+    };
+
+    private string GetSymbol(string currency)
+    {
+        return CurrencySymbols.TryGetValue(currency.ToUpper(), out var symbol) ? symbol : "";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        units = await Http.GetFromJsonAsync<List<string>>("api/GoldPriceConversion/units") ?? new();
+        currencies = await Http.GetFromJsonAsync<List<string>>("api/GoldPriceConversion/currencies") ?? new();
+    }
+
+    private async Task CalculatePrice()
+    {
+        errorMessage = null;
+        response = null;
+
+        if (request.Weight <= 0)
+        {
+            errorMessage = "Weight must be greater than zero.";
+            return;
+        }
+        var res = await Http.PostAsJsonAsync("api/GoldPriceConversion/calculate", request);
+
+        if (res.IsSuccessStatusCode)
+        {
+            response = await res.Content.ReadFromJsonAsync<GoldConversionResponse>();
+        }
+        else
+        {
+            errorMessage = await res.Content.ReadAsStringAsync();
+        }
     }
 }
