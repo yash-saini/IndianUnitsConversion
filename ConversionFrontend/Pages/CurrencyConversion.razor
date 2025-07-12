@@ -1,55 +1,146 @@
 ﻿@page "/CurrencyConversion"
 @using ConversionFrontend.Models
-@using static System.Net.WebRequestMethods
 @inject HttpClient Http
 
 <PageTitle>Currency Conversion</PageTitle>
-<h3>Currency Conversion</h3>
-<div class="form-group">
-    <label>Value</label>
-    <input type="number" class="form-control" @bind="request.Amount" />
+
+<div class="conversion-card">
+    <div class="card-header">
+        <h3 class="mb-0">
+            <i class="bi bi-currency-exchange me-2"></i>
+            Currency Converter
+        </h3>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group mb-3">
+                    <label class="form-label">Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-cash"></i></span>
+                        <input type="number" class="form-control" @bind="request.Amount" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label class="form-label">From Currency</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-arrow-up-right"></i></span>
+                                <select class="form-select" @bind="request.FromCurrency">
+                                    @foreach (var currency in currencies)
+                                    {
+                                        <option value="@currency">@currency</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label class="form-label">To Currency</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-arrow-down-left"></i></span>
+                                <select class="form-select" @bind="request.ToCurrency">
+                                    @foreach (var currency in currencies)
+                                    {
+                                        <option value="@currency">@currency</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 col-md-4 mx-auto mt-4">
+            <button class="btn btn-primary" @onclick="Convert">
+                <i class="bi bi-arrow-repeat me-2"></i>
+                Convert
+            </button>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="d-flex justify-content-center mt-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+
+        @if (response != null)
+        {
+            <div class="result-box mt-4">
+                <div class="row">
+                    <div class="col-md-5 text-center">
+                        <h5>@($"{response.Amount:N2}")</h5>
+                        <p class="text-uppercase mb-0">@response.FromCurrency</p>
+                    </div>
+                    <div class="col-md-2 d-flex justify-content-center align-items-center">
+                        <i class="bi bi-arrow-right fs-2"></i>
+                    </div>
+                    <div class="col-md-5 text-center">
+                        <h5>@($"{response.ConvertedAmount:N4}")</h5>
+                        <p class="text-uppercase mb-0">@response.ToCurrency</p>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (errorMessage != null)
+        {
+            <div class="alert alert-danger mt-3">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                @errorMessage
+            </div>
+        }
+    </div>
 </div>
 
-<div class="form-group">
-    <label>From Currency</label>
-    <select class="form-control" @bind="request.FromCurrency">
-        @foreach (var currency in currencies)
-        {
-            <option value="@currency">@currency</option>
-        }
-    </select>
-</div>
-<div class="form-group">
-    <label>To Currency</label>
-    <select class="form-control" @bind="request.ToCurrency">
-        @foreach (var currency in currencies)
-        {
-            <option value="@currency">@currency</option>
-        }
-    </select>
-</div>
-<button class="btn btn-primary mt-2" @onclick="Convert">Convert</button>
-@if (response != null)
-{
-    <div class="alert alert-success mt-3">
-        @($"{response.Amount} {response.FromCurrency} = {response.ConvertedAmount:F4} {response.ToCurrency}")
+<div class="conversion-card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0">About Currency Conversion</h5>
     </div>
-}
-@if (errorMessage != null)
-{
-    <div class="alert alert-danger mt-3">
-        @errorMessage
+    <div class="card-body">
+        <p>This converter supports the following international currencies:</p>
+        <div class="row">
+            <div class="col-md-6">
+                <ul>
+                    <li>USD (US Dollar)</li>
+                    <li>EUR (Euro)</li>
+                    <li>INR (Indian Rupee)</li>
+                    <li>GBP (British Pound)</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <ul>
+                    <li>JPY (Japanese Yen)</li>
+                    <li>AUD (Australian Dollar)</li>
+                    <li>CAD (Canadian Dollar)</li>
+                    <li>CHF (Swiss Franc)</li>
+                </ul>
+            </div>
+        </div>
     </div>
-}
+</div>
+
 @code {
     CurrencyConversionRequest request = new();
     CurrencyConversionResponse? response;
     string? errorMessage;
     List<string> currencies = new();
+    bool isLoading = false;
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            isLoading = true;
             currencies = await Http.GetFromJsonAsync<List<string>>("api/CurrencyConversion/currencies") ?? new();
             if (currencies.Count >= 2)
             {
@@ -61,11 +152,18 @@
         {
             errorMessage = $"Error fetching currencies: {ex.Message}";
         }
+        finally
+        {
+            isLoading = false;
+        }
     }
+
     private async Task Convert()
     {
         errorMessage = null;
         response = null;
+        isLoading = true;
+
         try
         {
             var res = await Http.PostAsJsonAsync("api/CurrencyConversion/convert", request);
@@ -85,6 +183,9 @@
         {
             errorMessage = "API not reachable. Make sure it's running.";
         }
+        finally
+        {
+            isLoading = false;
+        }
     }
 }
-
