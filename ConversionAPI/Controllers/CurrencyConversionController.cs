@@ -29,7 +29,7 @@ namespace ConversionAPI.Controllers
             {
                 return Ok(new
                 {
-                    ConvertedValue = request.Amount,
+                    ConvertedAmount = request.Amount,
                     request.FromCurrency,
                     request.ToCurrency,
                     request.RequestDate
