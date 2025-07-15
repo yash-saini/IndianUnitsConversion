@@ -10,7 +10,7 @@ A comprehensive web-based conversion utility built with Blazor WebAssembly and .
 - **Weight Conversions**: Convert between kilogram, gram, pound, ounce, tonne, stone, milligram.
 - **Currency Conversions**: Convert between USD, EUR, INR, GBP, JPY, AUD, CAD, CHF with real-time rates.
 - **Gold Price Calculator**: Get current gold prices in different units (gram, tola, ounce, kilogram, pound, carat) and currencies.
-- **Modern UI**: Responsive design with light/dark mode support.
+- **Modern UI**: Responsive design.
 
 ## 📊 Architecture
 
