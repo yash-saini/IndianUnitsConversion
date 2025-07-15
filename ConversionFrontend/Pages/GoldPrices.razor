@@ -75,8 +75,8 @@
             <div class="result-box mt-4">
                 <div class="row">
                     <div class="col-md-5 text-center">
-                        <h6>1 @response.Unit of Gold</h6>
-                        <h5>@string.Format("{0}{1:N2}", GetSymbol(response.Currency), response.PricePerGram)</h5>
+                        <h6>1 gram of Gold</h6>
+                        <h5>@string.Format("{0}{1:N2}", GetSymbol(response.Currency), response.PricePerUnit)</h5>
                         <p class="text-uppercase mb-0">@response.Currency</p>
                     </div>
                     <div class="col-md-2 d-flex justify-content-center align-items-center">

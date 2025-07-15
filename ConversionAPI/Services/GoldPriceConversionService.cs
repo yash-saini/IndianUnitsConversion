@@ -34,14 +34,14 @@ namespace ConversionAPI.Services
             var pricePerOunce = goldData?.Items.FirstOrDefault()?.XauPrice ?? throw new Exception("Gold price not available");
 
             double pricePerGram = pricePerOunce / 31.1035;
+            double gramsPerUnit = WeightFactors[request.Unit.ToLower()];
+            double pricePerUnit = pricePerGram * gramsPerUnit;
 
-            double weightInGrams = request.Weight * WeightFactors[request.Unit.ToLower()];
-
-            double totalPrice = weightInGrams * pricePerGram;
             return new GoldPriceResponse
             {
+                PricePerUnit = pricePerGram,
                 PricePerGram = pricePerGram,
-                TotalPrice = totalPrice,
+                TotalPrice = pricePerUnit * request.Weight,
                 Unit = request.Unit,
                 Currency = currency
             };
