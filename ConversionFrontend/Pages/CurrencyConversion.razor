@@ -78,14 +78,14 @@
             <div class="result-box mt-4">
                 <div class="row">
                     <div class="col-md-5 text-center">
-                        <h5>@($"{response.Amount:N2}")</h5>
+                        <h5>@string.Format("{0}{1:N2}", GetSymbol(response.FromCurrency), response.Amount)</h5>
                         <p class="text-uppercase mb-0">@response.FromCurrency</p>
                     </div>
                     <div class="col-md-2 d-flex justify-content-center align-items-center">
                         <i class="bi bi-arrow-right fs-2"></i>
                     </div>
                     <div class="col-md-5 text-center">
-                        <h5>@($"{response.ConvertedAmount:N4}")</h5>
+                        <h5>@string.Format("{0}{1:N2}", GetSymbol(response.ToCurrency), response.ConvertedAmount)</h5>
                         <p class="text-uppercase mb-0">@response.ToCurrency</p>
                     </div>
                 </div>
@@ -135,6 +135,23 @@
     string? errorMessage;
     List<string> currencies = new();
     bool isLoading = false;
+
+    private static readonly Dictionary<string, string> CurrencySymbols = new()
+    {
+        { "USD", "$" },
+        { "INR", "₹" },
+        { "EUR", "€" },
+        { "GBP", "£" },
+        { "JPY", "¥" },
+        { "AUD", "A$" },
+        { "CAD", "C$" },
+        { "CHF", "CHF" }
+    };
+
+    private string GetSymbol(string currency)
+    {
+        return CurrencySymbols.TryGetValue(currency.ToUpper(), out var symbol) ? symbol : "";
+    }
 
     protected override async Task OnInitializedAsync()
     {
