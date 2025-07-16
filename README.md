@@ -129,6 +129,7 @@ And currencies:
 - ASP.NET Core 8
 - C# 12
 - RESTful API design
+- Entity Framework Core with SQLite
 - HttpClient for external API integration
 
 **Frontend**:
