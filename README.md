@@ -116,12 +116,8 @@ And currencies:
 
 - API screen
 
-  <img width="1920" height="1713" alt="image" src="https://github.com/user-attachments/assets/bc8a4c60-977d-4956-81bc-5d698d0151a0" />
+  <img width="1920" height="1808" alt="image" src="https://github.com/user-attachments/assets/07c00035-0c04-450d-88bb-a258633399a3" />
 
-
-  
-
-  
 
 ## 🛠️ Technologies Used
 
@@ -140,17 +136,29 @@ And currencies:
 
 ## 🔌 API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/LandConversion/convert` | POST | Convert land area units |
-| `/api/LandConversion/units` | GET | Get supported land units |
-| `/api/WeightConversion/convert` | POST | Convert weight units |
-| `/api/WeightConversion/units` | GET | Get supported weight units |
-| `/api/CurrencyConversion/convert` | POST | Convert currency amounts |
-| `/api/CurrencyConversion/currencies` | GET | Get supported currencies |
-| `/api/GoldPriceConversion/calculate` | POST | Calculate gold prices |
-| `/api/GoldPriceConversion/units` | GET | Get supported gold weight units |
-| `/api/GoldPriceConversion/currencies` | GET | Get supported gold price currencies |
+| Endpoint | Method | Description | Request Body | Response |
+|----------|--------|-------------|-------------|----------|
+| **Land Conversion** |
+| `/api/LandConversion/convert` | POST | Convert land area units | `{"value": 10, "fromUnit": "acre", "toUnit": "hectare"}` | `{"convertedValue": 4.04686, "fromUnit": "acre", "toUnit": "hectare", "landId": "guid"}` |
+| `/api/LandConversion/units` | GET | Get supported land units | None | `["hectare", "square_meter", "acre", "square_kilometer", ...]` |
+| `/api/LandConversion/history` | GET | Get land conversion history | None | Array of conversion records |
+| **Weight Conversion** |
+| `/api/WeightConversion/convert` | POST | Convert weight units | `{"value": 100, "fromUnit": "gram", "toUnit": "kilogram"}` | `{"convertedValue": 0.1, "fromUnit": "gram", "toUnit": "kilogram", "weightId": "guid"}` |
+| `/api/WeightConversion/units` | GET | Get supported weight units | None | `["kilogram", "gram", "pound", "ounce", ...]` |
+| `/api/WeightConversion/history` | GET | Get weight conversion history | None | Array of conversion records |
+| **Currency Conversion** |
+| `/api/CurrencyConversion/convert` | POST | Convert currency amounts | `{"amount": 100, "fromCurrency": "USD", "toCurrency": "EUR"}` | `{"convertedAmount": 85.20, "fromCurrency": "USD", "toCurrency": "EUR"}` |
+| `/api/CurrencyConversion/currencies` | GET | Get supported currencies | None | `["USD", "EUR", "INR", "GBP", ...]` |
+| `/api/CurrencyConversion/history` | GET | Get currency conversion history | None | Array of conversion records |
+| **Gold Price Calculation** |
+| `/api/GoldPriceConversion/calculate` | POST | Calculate gold prices | `{"weight": 10, "unit": "gram", "currency": "USD"}` | `{"pricePerGram": 63.25, "pricePerUnit": 63.25, "totalPrice": 632.50, "unit": "gram", "currency": "USD"}` |
+| `/api/GoldPriceConversion/units` | GET | Get supported gold weight units | None | `["gram", "tola", "ounce", "kilogram", ...]` |
+| `/api/GoldPriceConversion/currencies` | GET | Get supported gold price currencies | None | `["INR", "USD", "EUR", "GBP"]` |
+| `/api/GoldPriceConversion/history` | GET | Get gold price calculation history | None | Array of conversion records |
+| **Conversion History** |
+| `/api/ConversionHistory` | GET | Get all conversion history | None | Array of all conversion records |
+| `/api/ConversionHistory/types` | GET | Get all conversion types | None | `["Land", "Weight", "Currency", "Gold"]` |
+| `/api/ConversionHistory/{type}` | GET | Get history for specific conversion type | None | Array of conversion records for specific type |
 
 ## 📋 Future Enhancements
 
