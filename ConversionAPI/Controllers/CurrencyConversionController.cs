@@ -9,9 +9,11 @@ namespace ConversionAPI.Controllers
     public class CurrencyConversionController : ControllerBase
     {
         private readonly CurrencyConversionService _currencyConversionService;
-        public CurrencyConversionController(CurrencyConversionService currencyConversionService)
+        private readonly ConversionHistoryService _historyService;
+        public CurrencyConversionController(CurrencyConversionService currencyConversionService, ConversionHistoryService historyService)
         {
             _currencyConversionService = currencyConversionService;
+            _historyService = historyService;
         }
 
         [HttpPost("convert")]
@@ -37,7 +39,8 @@ namespace ConversionAPI.Controllers
             }
             try
             {
-                double convertedAmount = await _currencyConversionService.ConvertAsync(request.FromCurrency, request.ToCurrency, request.Amount);
+                double convertedAmount = await _currencyConversionService.ConvertAsync(request.FromCurrency, request.ToCurrency, request.Amount);              
+                await _historyService.SaveCurrencyConversionAsync(request.Amount, request.FromCurrency, convertedAmount, request.ToCurrency);
                 return Ok(new
                 {
                     ConvertedAmount = convertedAmount,
@@ -56,6 +59,13 @@ namespace ConversionAPI.Controllers
         {
             var supportedCurrencies = _currencyConversionService.GetSupportedCurrencies();
             return Ok(supportedCurrencies);
+        }
+
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory()
+        {
+            var history = await _historyService.GetRecentConversionsAsync();
+            return Ok(history.Where(h => h.ConversionType == "Currency"));
         }
     }
 }

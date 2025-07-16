@@ -9,13 +9,16 @@ namespace ConversionAPI.Controllers
     public class WeightConversionController : ControllerBase
     {
         private readonly WeightConversionService _weightConversionService;
-        public WeightConversionController(WeightConversionService weightConversionService)
+        private readonly ConversionHistoryService _historyService;
+
+        public WeightConversionController(WeightConversionService weightConversionService, ConversionHistoryService historyService)
         {
             _weightConversionService = weightConversionService;
+            _historyService = historyService;
         }
 
         [HttpPost("convert")]
-        public IActionResult ConvertWeight([FromBody] WeightConversionRequest request)
+        public async Task<IActionResult> ConvertWeight([FromBody] WeightConversionRequest request)
         {
             if (request == null || string.IsNullOrEmpty(request.FromUnit) || string.IsNullOrEmpty(request.ToUnit))
             {
@@ -36,6 +39,12 @@ namespace ConversionAPI.Controllers
             try
             {
                 double convertedValue = _weightConversionService.ConvertWeight(request.Value, request.FromUnit, request.ToUnit);
+                await _historyService.SaveWeightConversionAsync(
+                     request.Value,
+                     request.FromUnit,
+                     convertedValue,
+                     request.ToUnit);
+
                 return Ok(new
                 {
                     ConvertedValue = convertedValue,
@@ -64,6 +73,13 @@ namespace ConversionAPI.Controllers
                 "milligram"
             };
             return Ok(supportedUnits);
+        }
+
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory()
+        {
+            var history = await _historyService.GetRecentConversionsAsync();
+            return Ok(history.Where(h => h.ConversionType == "Weight"));
         }
     }
 }

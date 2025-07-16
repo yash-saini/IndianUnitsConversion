@@ -9,13 +9,18 @@ namespace ConversionAPI.Controllers
     public class LandConversionController : ControllerBase
     {
         private readonly LandConversionService _landConversionService;
-        public LandConversionController(LandConversionService landConversionService)
+        private readonly ConversionHistoryService _historyService;
+
+        public LandConversionController(
+            LandConversionService landConversionService,
+            ConversionHistoryService historyService)
         {
             _landConversionService = landConversionService;
+            _historyService = historyService;
         }
 
         [HttpPost("convert")]
-        public IActionResult ConvertLandArea([FromBody] LandConversionRequest request)
+        public async Task<IActionResult> ConvertLandArea([FromBody] LandConversionRequest request)
         {
             if (request == null || string.IsNullOrEmpty(request.FromUnit) || string.IsNullOrEmpty(request.ToUnit))
             {
@@ -36,6 +41,12 @@ namespace ConversionAPI.Controllers
             try
             {
                 double convertedValue = _landConversionService.ConvertLandArea(request.Value, request.FromUnit, request.ToUnit);
+                await _historyService.SaveLandConversionAsync(
+                     request.Value,
+                     request.FromUnit,
+                     convertedValue,
+                     request.ToUnit);
+
                 return Ok(new
                 {
                     ConvertedValue = convertedValue,
@@ -52,7 +63,8 @@ namespace ConversionAPI.Controllers
 
         [HttpGet("units")]
         public IActionResult GetSupportedUnits()
-        {   var supportedUnits = new[]
+        {
+            var supportedUnits = new[]
             {
                 "hectare",
                 "square_meter",
@@ -66,6 +78,13 @@ namespace ConversionAPI.Controllers
                 "square_yards"
             };
             return Ok(supportedUnits);
+        }
+
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory()
+        {
+            var history = await _historyService.GetRecentConversionsAsync();
+            return Ok(history.Where(h => h.ConversionType == "Land"));
         }
     }
 }

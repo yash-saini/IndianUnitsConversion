@@ -9,9 +9,12 @@ namespace ConversionAPI.Controllers
     public class GoldPriceConversionController : ControllerBase
     {
         private readonly GoldPriceConversionService _goldPriceConversionService;
-        public GoldPriceConversionController(GoldPriceConversionService goldPriceConversionService)
+        private readonly ConversionHistoryService _historyService;
+
+        public GoldPriceConversionController(GoldPriceConversionService goldPriceConversionService, ConversionHistoryService historyService)
         {
             _goldPriceConversionService = goldPriceConversionService;
+            _historyService = historyService;
         }
 
         [HttpPost("calculate")]
@@ -23,12 +26,20 @@ namespace ConversionAPI.Controllers
             try
             {
                 var result = await _goldPriceConversionService.GetGoldPriceAsync(request);
+                await _historyService.SaveGoldPriceAsync(request.Weight, request.Unit, request.Currency, result.TotalPrice);
                 return Ok(result);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet("history")]
+        public async Task<IActionResult> GetHistory()
+        {
+            var history = await _historyService.GetRecentConversionsAsync();
+            return Ok(history.Where(h => h.ConversionType == "Gold"));
         }
 
         [HttpGet("units")]
